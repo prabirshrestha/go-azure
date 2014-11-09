@@ -10,7 +10,19 @@ const (
 	defaultApiVersion = "2014-04-01-preview"
 )
 
-func New(options *Options) (*Service, error) {
+func NewWithToken(token string) (*Service, error) {
+	if token == "" {
+		return nil, errors.New("token in empty")
+	}
+
+	options := &Opts{
+		Client: &http.Client{},
+	}
+
+	return New(options)
+}
+
+func New(options *Opts) (*Service, error) {
 	if options == nil {
 		return nil, errors.New("options is nil")
 	}
@@ -35,10 +47,12 @@ func New(options *Options) (*Service, error) {
 		ApiVersion: apiVersion,
 	}
 
+	s.Resource = NewResourceService(s)
+
 	return s, nil
 }
 
-type Options struct {
+type Opts struct {
 	Client     *http.Client
 	BasePath   string
 	ApiVersion string
@@ -48,4 +62,6 @@ type Service struct {
 	client     *http.Client
 	BasePath   string
 	ApiVersion string
+
+	Resource *ResourceService
 }
