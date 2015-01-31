@@ -8,7 +8,7 @@ import (
 
 const (
 	defaultBasePath = "https://management.azure.com/"
-	defaultApiVersion = "2014-04-01-preview"
+	defaultApiVersion = "2015-01-01"
 )
 
 type Options struct {
