@@ -4,16 +4,16 @@ import (
 	"errors"
 )
 
-func NewResourceService(s *Service) *ResourceService {
-	rs := &ResourceService{s: s}
-	return rs
+func NewResourceOperations(c *ResourceManagementClient) *ResourceOperations {
+	ro := &ResourceOperations{c: c}
+	return ro
 }
 
-type ResourceService struct {
-	s *Service
+type ResourceOperations struct {
+	c *ResourceManagementClient
 }
 
-type ResourceListOpts struct {
+type ResourceListParameters struct {
 	SubscriptionId string
 	Top            int
 	SkipToken      string
@@ -21,14 +21,16 @@ type ResourceListOpts struct {
 	ApiVersion     string
 }
 
-func (rs *ResourceService) List(options *ResourceListOpts) (*ResourceService, error) {
-	if options == nil {
-		return nil, errors.New("options is nil")
+type ResourceListResult struct {
+
+}
+
+func (ro *ResourceOperations) List(parameters ResourceListParameters) (*ResourceListResult, error) {
+	subscriptionId := getSubscriptionId(ro.c, parameters)
+
+	if subscriptionId == "" {
+		return nil, errors.New("subscriptionId is empty")
 	}
 
-	if options.SubscriptionId == "" {
-		return nil, errors.New("options.SubscriptionId is empty")
-	}
-
-	return nil, nil
+	return &ResourceListResult{}, nil
 }

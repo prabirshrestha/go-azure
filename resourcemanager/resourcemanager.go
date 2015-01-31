@@ -1,34 +1,39 @@
 package resourcemanager
 
 import (
-	"errors"
 	"net/http"
+
+	"github.com/prabirshrestha/go-azure/azure"
 )
 
 const (
-	defaultBasePath   = "https://management.azure.com/"
+	defaultBasePath = "https://management.azure.com/"
 	defaultApiVersion = "2014-04-01-preview"
 )
 
-func NewWithToken(token string) (*Service, error) {
-	if token == "" {
-		return nil, errors.New("token in empty")
-	}
+type Options struct {
+	Client *http.Client
+	BasePath string
+	ApiVersion string
 
-	options := &Opts{
-		Client: &http.Client{},
-	}
-
-	return New(options)
+	Credentials interface{}
 }
 
-func New(options *Opts) (*Service, error) {
-	if options == nil {
-		return nil, errors.New("options is nil")
-	}
+type ResourceManagementClient struct {
+	client *http.Client;
+	basePath string;
+	apiVersion string;
 
+	tokenCredentials *azure.TokenCredentials;
+	certificateCredentials *azure.CertificateCredentials;
+
+	Resource *ResourceOperations
+}
+
+func New(options Options) (*ResourceManagementClient, error) {
+	httpClient := options.Client;
 	if options.Client == nil {
-		return nil, errors.New("options.Client is nil")
+		httpClient = http.DefaultClient
 	}
 
 	basePath := options.BasePath
@@ -41,27 +46,41 @@ func New(options *Opts) (*Service, error) {
 		apiVersion = defaultApiVersion
 	}
 
-	s := &Service{
-		client:     options.Client,
-		BasePath:   basePath,
-		ApiVersion: apiVersion,
+	client := &ResourceManagementClient{
+		client:     httpClient,
+		basePath:   basePath,
+		apiVersion: apiVersion,
 	}
 
-	s.Resource = NewResourceService(s)
+	if tokenCredentials, ok := options.Credentials.(azure.TokenCredentials); ok {
+		client.tokenCredentials = &tokenCredentials
+	}
 
-	return s, nil
+	if certificateCredentials, ok := options.Credentials.(azure.CertificateCredentials); ok {
+		client.certificateCredentials = &certificateCredentials
+	}
+
+	client.Resource = NewResourceOperations(client)
+
+	return client, nil
 }
 
-type Opts struct {
-	Client     *http.Client
-	BasePath   string
-	ApiVersion string
-}
+func getSubscriptionId(c *ResourceManagementClient, options interface{}) string {
+	var result string;
 
-type Service struct {
-	client     *http.Client
-	BasePath   string
-	ApiVersion string
+	if options != nil {
+		// use subscription Id from options
+	}
 
-	Resource *ResourceService
+	if result == "" {
+		if c.tokenCredentials != nil {
+			result = c.tokenCredentials.SubscriptionId
+		}
+
+		if result != "" && c.certificateCredentials != nil {
+			result = c.certificateCredentials.SubscriptionId
+		}
+	}
+
+	return result;
 }
