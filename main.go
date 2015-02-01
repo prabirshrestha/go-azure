@@ -1,16 +1,24 @@
 package main
 
-import "github.com/prabirshrestha/go-azure/azure"
-import arm "github.com/prabirshrestha/go-azure/resourcemanager"
-import "fmt"
+import (
+	"fmt"
+	"os"
+
+	"github.com/prabirshrestha/go-azure/azure"
+	arm "github.com/prabirshrestha/go-azure/resourcemanager"
+)
 
 func main() {
-	token, _ := azure.NewTokenCredentials("subscriptionId-a", "token-a")
+	token, _ := azure.NewTokenCredentials(os.Getenv("subscription"), os.Getenv("token"))
 	client, _ := arm.New(&arm.Options{Credentials: token})
 
 	parameters := &arm.ResourceListParameters{}
-	result, _ := client.Resource.List(parameters)
+	result, opResponse, err := client.Resource.List(parameters)
 
-	fmt.Println(client)
-	fmt.Println(result)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Printf("%+v\n", opResponse)
+	fmt.Printf("%+v\n", result)
 }

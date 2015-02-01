@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/prabirshrestha/go-azure/azure"
@@ -34,6 +35,14 @@ type ResourceManagementClient struct {
 	certificateCredentials *azure.CertificateCredentials
 
 	Resource *ResourceOperations
+}
+
+type AzureOperationResponse struct {
+	RequestId                           string
+	RateLimitRemainingSubscriptionReads int
+	CorrelationRequestId                string
+	RoutingRequestId                    string
+	StatusCode                          int
 }
 
 func New(options *Options) (*ResourceManagementClient, error) {
@@ -113,10 +122,14 @@ func (c *ResourceManagementClient) NewRequest(method, path string, body interfac
 		req.Header.Set("Content=Type", contentType)
 	}
 
+	if c.tokenCredentials != nil {
+		req.Header.Set("Authorization", "Bearer "+c.tokenCredentials.Token)
+	}
+
 	return req, nil
 }
 
-func (c *ResourceManagementClient) Do(request *http.Request, v interface{}) error {
+func (c *ResourceManagementClient) Do(request *http.Request, v interface{}) (*AzureOperationResponse, error) {
 	httpClient := c.client
 	if httpClient == nil {
 		httpClient = http.DefaultClient
@@ -124,13 +137,13 @@ func (c *ResourceManagementClient) Do(request *http.Request, v interface{}) erro
 
 	res, err := httpClient.Do(request)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	defer res.Body.Close()
 
 	if res.StatusCode/100 != 2 {
-		return errors.New("error occurred")
+		return nil, errors.New("error occurred")
 	}
 
 	switch t := v.(type) {
@@ -141,47 +154,58 @@ func (c *ResourceManagementClient) Do(request *http.Request, v interface{}) erro
 		err = json.NewDecoder(res.Body).Decode(v)
 	}
 
-	return err
+	if err != nil {
+		return nil, err
+	}
+
+	azureOperationResponse := &AzureOperationResponse{}
+	azureOperationResponse.RateLimitRemainingSubscriptionReads, _ = strconv.Atoi(res.Header.Get("x-ms-ratelimit-remaining-subscription-reads"))
+	azureOperationResponse.RequestId = res.Header.Get("x-ms-request-id")
+	azureOperationResponse.CorrelationRequestId = res.Header.Get("x-ms-correlation-request-id")
+	azureOperationResponse.RoutingRequestId = res.Header.Get("x-ms-routing-request-id")
+	azureOperationResponse.StatusCode = res.StatusCode
+
+	return azureOperationResponse, nil
 }
 
-func (c *ResourceManagementClient) DoGet(path string, v interface{}) error {
+func (c *ResourceManagementClient) DoGet(path string, v interface{}) (*AzureOperationResponse, error) {
 	req, err := c.NewRequest("GET", path, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return c.Do(req, v)
 }
 
-func (c *ResourceManagementClient) DoPost(path string, v interface{}) error {
+func (c *ResourceManagementClient) DoPost(path string, v interface{}) (*AzureOperationResponse, error) {
 	req, err := c.NewRequest("POST", path, v)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return c.Do(req, v)
 }
 
-func (c *ResourceManagementClient) DoPut(path string, v interface{}) error {
+func (c *ResourceManagementClient) DoPut(path string, v interface{}) (*AzureOperationResponse, error) {
 	req, err := c.NewRequest("PUT", path, v)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return c.Do(req, v)
 }
 
-func (c *ResourceManagementClient) DoPatch(path string, v interface{}) error {
+func (c *ResourceManagementClient) DoPatch(path string, v interface{}) (*AzureOperationResponse, error) {
 	req, err := c.NewRequest("PATCH", path, v)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return c.Do(req, v)
 }
 
-func (c *ResourceManagementClient) Delete(path string) error {
+func (c *ResourceManagementClient) Delete(path string) (*AzureOperationResponse, error) {
 	req, err := c.NewRequest("DELETE", path, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return c.Do(req, v)
+	return c.Do(req, nil)
 }
 
 func getSubscriptionId(c *ResourceManagementClient, options interface{}) string {

@@ -1,9 +1,5 @@
 package resourcemanager
 
-import (
-	"errors"
-)
-
 func NewResourceOperations(c *ResourceManagementClient) *ResourceOperations {
 	ro := &ResourceOperations{c: c}
 	return ro
@@ -14,22 +10,25 @@ type ResourceOperations struct {
 }
 
 type ResourceListParameters struct {
-	SubscriptionId string
-	Top            int
-	SkipToken      string
-	Filter         string
-	ApiVersion     string
+	ResourceGroupName string
+	ResourceType      string
+	TagName           string
+	TagValue          string
+	Top               int
 }
 
 type ResourceListResult struct {
 }
 
-func (ro *ResourceOperations) List(parameters *ResourceListParameters) (*ResourceListResult, error) {
-	subscriptionId := getSubscriptionId(ro.c, parameters)
+func (ro *ResourceOperations) List(parameters *ResourceListParameters) (*ResourceListResult, *AzureOperationResponse, error) {
+	subscriptionId := getSubscriptionId(ro.c, nil)
 
-	if subscriptionId == "" {
-		return nil, errors.New("subscriptionId is empty")
+	var result ResourceListResult
+	azureOperationResponse, err := ro.c.DoGet("/subscriptions/"+subscriptionId+"/resources?api-version="+ro.c.apiVersion, &result)
+
+	if err != nil {
+		return nil, nil, err
 	}
 
-	return &ResourceListResult{}, nil
+	return &result, azureOperationResponse, nil
 }
