@@ -22,10 +22,9 @@ type ResourceListParameters struct {
 }
 
 type ResourceListResult struct {
-
 }
 
-func (ro *ResourceOperations) List(parameters ResourceListParameters) (*ResourceListResult, error) {
+func (ro *ResourceOperations) List(parameters *ResourceListParameters) (*ResourceListResult, error) {
 	subscriptionId := getSubscriptionId(ro.c, parameters)
 
 	if subscriptionId == "" {

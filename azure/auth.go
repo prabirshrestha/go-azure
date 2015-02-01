@@ -1,13 +1,13 @@
 package azure
 
 type TokenCredentials struct {
-	SubscriptionId string;
-	Token string;
+	SubscriptionId string
+	Token          string
 }
 
 type CertificateCredentials struct {
-	SubscriptionId string;
-	Certificate []byte
+	SubscriptionId string
+	Certificate    []byte
 }
 
 func NewTokenCredentials(subscriptionId string, token string) (TokenCredentials, error) {

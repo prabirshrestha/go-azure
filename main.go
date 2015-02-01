@@ -6,9 +6,9 @@ import "fmt"
 
 func main() {
 	token, _ := azure.NewTokenCredentials("subscriptionId-a", "token-a")
-	client, _ := arm.New(arm.Options{Credentials: token})
+	client, _ := arm.New(&arm.Options{Credentials: token})
 
-	parameters := arm.ResourceListParameters{}
+	parameters := &arm.ResourceListParameters{}
 	result, _ := client.Resource.List(parameters)
 
 	fmt.Println(client)
