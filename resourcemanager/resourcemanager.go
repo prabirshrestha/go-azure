@@ -144,6 +144,46 @@ func (c *ResourceManagementClient) Do(request *http.Request, v interface{}) erro
 	return err
 }
 
+func (c *ResourceManagementClient) DoGet(path string, v interface{}) error {
+	req, err := c.NewRequest("GET", path, nil)
+	if err != nil {
+		return err
+	}
+	return c.Do(req, v)
+}
+
+func (c *ResourceManagementClient) DoPost(path string, v interface{}) error {
+	req, err := c.NewRequest("POST", path, v)
+	if err != nil {
+		return err
+	}
+	return c.Do(req, v)
+}
+
+func (c *ResourceManagementClient) DoPut(path string, v interface{}) error {
+	req, err := c.NewRequest("PUT", path, v)
+	if err != nil {
+		return err
+	}
+	return c.Do(req, v)
+}
+
+func (c *ResourceManagementClient) DoPatch(path string, v interface{}) error {
+	req, err := c.NewRequest("PATCH", path, v)
+	if err != nil {
+		return err
+	}
+	return c.Do(req, v)
+}
+
+func (c *ResourceManagementClient) Delete(path string) error {
+	req, err := c.NewRequest("DELETE", path, nil)
+	if err != nil {
+		return err
+	}
+	return c.Do(req, v)
+}
+
 func getSubscriptionId(c *ResourceManagementClient, options interface{}) string {
 	var result string
 
