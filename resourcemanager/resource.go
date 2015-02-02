@@ -17,7 +17,16 @@ type ResourceListParameters struct {
 	Top               int
 }
 
+type Resource struct {
+	Id       string
+	Name     string
+	Type     string
+	Location string
+	Tags     map[string]string
+}
+
 type ResourceListResult struct {
+	Value []Resource
 }
 
 func (ro *ResourceOperations) List(parameters *ResourceListParameters) (*ResourceListResult, *AzureOperationResponse, error) {
