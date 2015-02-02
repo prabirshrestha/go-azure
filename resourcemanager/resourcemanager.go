@@ -200,7 +200,7 @@ func (c *ResourceManagementClient) DoPatch(path string, v interface{}) (*AzureOp
 	return c.Do(req, v)
 }
 
-func (c *ResourceManagementClient) Delete(path string) (*AzureOperationResponse, error) {
+func (c *ResourceManagementClient) DoDelete(path string) (*AzureOperationResponse, error) {
 	req, err := c.NewRequest("DELETE", path, nil)
 	if err != nil {
 		return nil, err
