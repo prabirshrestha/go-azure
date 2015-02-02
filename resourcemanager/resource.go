@@ -18,15 +18,15 @@ type ResourceListParameters struct {
 }
 
 type Resource struct {
-	Id       string
-	Name     string
-	Type     string
-	Location string
-	Tags     map[string]string
+	Id       string            `json:"id"`
+	Name     string            `json:"name"`
+	Type     string            `json:"type"`
+	Location string            `json:"location"`
+	Tags     map[string]string `json:"tags"`
 }
 
 type ResourceListResult struct {
-	Value []Resource
+	Value []Resource `json:"value"`
 }
 
 func (ro *ResourceOperations) List(parameters *ResourceListParameters) (*ResourceListResult, *AzureOperationResponse, error) {
