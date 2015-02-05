@@ -41,3 +41,7 @@ func (ro *ResourceOperations) List(parameters *ResourceListParameters) (*Resourc
 
 	return &result, azureOperationResponse, nil
 }
+
+func (ro *ResourceOperations) ListNext(nextLink string) (*ResourceListResult, *AzureOperationResponse, error) {
+	return nil, nil, nil
+}
