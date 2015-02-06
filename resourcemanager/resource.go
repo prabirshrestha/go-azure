@@ -17,6 +17,22 @@ type ResourceListParameters struct {
 	Top               int
 }
 
+type ResourceMoveInfo struct {
+
+}
+
+type ResourceExistsResult struct {
+
+}
+
+type ResourceCreateOrUpdateResult struct {
+
+}
+
+type ResourceGetResult struct {
+	
+}
+
 type Resource struct {
 	Id       string            `json:"id"`
 	Name     string            `json:"name"`
@@ -43,5 +59,25 @@ func (ro *ResourceOperations) List(parameters *ResourceListParameters) (*Resourc
 }
 
 func (ro *ResourceOperations) ListNext(nextLink string) (*ResourceListResult, *AzureOperationResponse, error) {
+	return nil, nil, nil
+}
+
+func (ro *ResourceOperations) Moveresources(sourceResourceGroupName string, parameters *ResourceMoveInfo) (*AzureOperationResponse, error) {
+	return nil, nil
+}
+
+func (ro *ResourceOperations) Get(resourceGroupName string, identity *ResourceIdentity) (*ResourceGetResult, *AzureOperationResponse, error) {
+	return nil, nil, nil
+}
+
+func (ro *ResourceOperations) Delete(resourceGroupName string, identity *ResourceIdentity) (*AzureOperationResponse, error) {
+	return nil, nil
+}
+
+func (ro *ResourceOperations) CreateOrUpdate(resourceGroupName string, identity *ResourceIdentity) (*ResourceCreateOrUpdateResult, *AzureOperationResponse, error) {
+	return nil, nil, nil
+}
+
+func (ro *ResourceOperations) CheckExistence(resourceGroupName string, identity *ResourceIdentity) (*ResourceExistsResult, *AzureOperationResponse, error) {
 	return nil, nil, nil
 }
