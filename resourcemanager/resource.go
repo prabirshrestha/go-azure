@@ -52,8 +52,24 @@ type ResourceListResult struct {
 func (ro *ResourceOperations) List(parameters *ResourceListParameters) (*ResourceListResult, *AzureOperationResponse, error) {
 	subscriptionId := getSubscriptionId(ro.c, nil)
 
+	path := "/subscriptions/" + subscriptionId
+
+	if parameters != nil {
+		if parameters.ResourceGroupName != "" {
+			path += "/resourcegroups/" + parameters.ResourceGroupName
+		}
+	}
+
+	path += "/resources"
+
+	if parameters != nil {
+
+	}
+
+	path += "?api-version=" + ro.c.apiVersion
+
 	var result ResourceListResult
-	azureOperationResponse, err := ro.c.DoGet("/subscriptions/"+subscriptionId+"/resources?api-version="+ro.c.apiVersion, &result)
+	azureOperationResponse, err := ro.c.DoGet(path, &result)
 
 	if err != nil {
 		return nil, nil, err

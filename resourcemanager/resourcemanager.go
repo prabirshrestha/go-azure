@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"reflect"
@@ -156,7 +157,7 @@ func (c *ResourceManagementClient) Do(request *http.Request, v interface{}) (*Az
 	azureOperationResponse.StatusCode = res.StatusCode
 
 	if res.StatusCode/100 != 2 {
-		return nil, Error{error: errors.New("error occurred"), AzureOperationResponse: azureOperationResponse, StatusCode: azureOperationResponse.StatusCode}
+		return nil, Error{error: errors.New(fmt.Sprintf("go-azure error: Status Code: %v", res.StatusCode)), AzureOperationResponse: azureOperationResponse, StatusCode: azureOperationResponse.StatusCode}
 	}
 
 	switch t := v.(type) {
