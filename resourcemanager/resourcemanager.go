@@ -45,6 +45,12 @@ type AzureOperationResponse struct {
 	StatusCode                          int
 }
 
+type Error struct {
+	error
+	AzureOperationResponse *AzureOperationResponse
+	StatusCode             int
+}
+
 func New(options *Options) (*ResourceManagementClient, error) {
 	basePath := options.BasePath
 	if basePath == "" {
@@ -142,8 +148,15 @@ func (c *ResourceManagementClient) Do(request *http.Request, v interface{}) (*Az
 
 	defer res.Body.Close()
 
+	azureOperationResponse := &AzureOperationResponse{}
+	azureOperationResponse.RateLimitRemainingSubscriptionReads, _ = strconv.Atoi(res.Header.Get("x-ms-ratelimit-remaining-subscription-reads"))
+	azureOperationResponse.RequestId = res.Header.Get("x-ms-request-id")
+	azureOperationResponse.CorrelationRequestId = res.Header.Get("x-ms-correlation-request-id")
+	azureOperationResponse.RoutingRequestId = res.Header.Get("x-ms-routing-request-id")
+	azureOperationResponse.StatusCode = res.StatusCode
+
 	if res.StatusCode/100 != 2 {
-		return nil, errors.New("error occurred")
+		return nil, Error{error: errors.New("error occurred"), AzureOperationResponse: azureOperationResponse, StatusCode: azureOperationResponse.StatusCode}
 	}
 
 	switch t := v.(type) {
@@ -157,13 +170,6 @@ func (c *ResourceManagementClient) Do(request *http.Request, v interface{}) (*Az
 	if err != nil {
 		return nil, err
 	}
-
-	azureOperationResponse := &AzureOperationResponse{}
-	azureOperationResponse.RateLimitRemainingSubscriptionReads, _ = strconv.Atoi(res.Header.Get("x-ms-ratelimit-remaining-subscription-reads"))
-	azureOperationResponse.RequestId = res.Header.Get("x-ms-request-id")
-	azureOperationResponse.CorrelationRequestId = res.Header.Get("x-ms-correlation-request-id")
-	azureOperationResponse.RoutingRequestId = res.Header.Get("x-ms-routing-request-id")
-	azureOperationResponse.StatusCode = res.StatusCode
 
 	return azureOperationResponse, nil
 }

@@ -15,6 +15,7 @@ func main() {
 	listResources(client)
 	// getResource(client)
 	// deleteResource(client)
+	// checkExistenceResource(client)
 }
 
 func listResources(client *arm.ResourceManagementClient) {
@@ -65,4 +66,22 @@ func deleteResource(client *arm.ResourceManagementClient) {
 	}
 
 	fmt.Printf("%+v\n", aor)
+}
+
+func checkExistenceResource(client *arm.ResourceManagementClient) {
+	ri := &arm.ResourceIdentity{}
+	ri.ResourceProviderNamespace = "Microsoft.Web"
+	ri.ResourceType = "sites"
+	ri.ResourceName = "websitename"
+	ri.ResourceProviderApiVersion = "2014-04-01"
+
+	result, aor, err := client.Resources.CheckExistence("Default-Web-WestUS", ri)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Printf("%+v\n", aor)
+	fmt.Printf("%+v\n", result)
 }

@@ -25,6 +25,7 @@ type ResourceMoveInfo struct {
 }
 
 type ResourceExistsResult struct {
+	Exists bool
 }
 
 type ResourceCreateOrUpdateResult struct {
@@ -102,5 +103,24 @@ func (ro *ResourceOperations) CreateOrUpdate(resourceGroupName string, identity 
 }
 
 func (ro *ResourceOperations) CheckExistence(resourceGroupName string, identity *ResourceIdentity) (*ResourceExistsResult, *AzureOperationResponse, error) {
-	return nil, nil, nil
+	_, azureOperationResponse, err := ro.Get(resourceGroupName, identity)
+
+	result := ResourceExistsResult{Exists: true}
+
+	if err != nil {
+		switch err.(type) {
+		case Error:
+			error := err.(Error)
+			if error.StatusCode == 404 {
+				result.Exists = false
+				return &result, error.AzureOperationResponse, nil
+			} else {
+				return nil, nil, err
+			}
+		default:
+			return nil, nil, err
+		}
+	}
+
+	return &result, azureOperationResponse, nil
 }
