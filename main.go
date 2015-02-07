@@ -12,8 +12,9 @@ func main() {
 	token, _ := azure.NewTokenCredentials(os.Getenv("subscription"), os.Getenv("token"))
 	client, _ := arm.New(&arm.Options{Credentials: token})
 
-	// listResources(client)
-	getResource(client)
+	listResources(client)
+	// getResource(client)
+	// deleteResource(client)
 }
 
 func listResources(client *arm.ResourceManagementClient) {
@@ -33,7 +34,7 @@ func getResource(client *arm.ResourceManagementClient) {
 	ri := &arm.ResourceIdentity{}
 	ri.ResourceProviderNamespace = "Microsoft.Web"
 	ri.ResourceType = "sites"
-	ri.ResourceName = "pstestwebsite"
+	ri.ResourceName = "websitename"
 	ri.ResourceProviderApiVersion = "2014-04-01"
 
 	resource, aor, err := client.Resources.Get("Default-Web-WestUS", ri)
@@ -47,4 +48,21 @@ func getResource(client *arm.ResourceManagementClient) {
 	fmt.Printf("%+v\n", resource)
 	properties := resource.Properties.(map[string]interface{})
 	fmt.Println(properties["adminEnabled"])
+}
+
+func deleteResource(client *arm.ResourceManagementClient) {
+	ri := &arm.ResourceIdentity{}
+	ri.ResourceProviderNamespace = "Microsoft.Web"
+	ri.ResourceType = "sites"
+	ri.ResourceName = "websitename"
+	ri.ResourceProviderApiVersion = "2014-04-01"
+
+	aor, err := client.Resources.Delete("Default-Web-WestUS", ri)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Printf("%+v\n", aor)
 }

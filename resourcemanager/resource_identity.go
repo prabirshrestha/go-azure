@@ -5,4 +5,5 @@ type ResourceIdentity struct {
 	ResourceType               string
 	ResourceProviderApiVersion string
 	ResourceProviderNamespace  string
+	ParentResourcePath         string
 }

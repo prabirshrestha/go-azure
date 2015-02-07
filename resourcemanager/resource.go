@@ -74,8 +74,8 @@ func (ro *ResourceOperations) Get(resourceGroupName string, identity *ResourceId
 
 	var result ResourceGetResult
 
-	path := fmt.Sprintf("/subscriptions/%s/resourcegroups/%s/providers/%s/%s/%s?api-version=%s",
-		subscriptionId, resourceGroupName, identity.ResourceProviderNamespace, identity.ResourceType, identity.ResourceName,
+	path := fmt.Sprintf("/subscriptions/%s/resourcegroups/%s/providers/%s/%s/%s/%s?api-version=%s",
+		subscriptionId, resourceGroupName, identity.ResourceProviderNamespace, identity.ParentResourcePath, identity.ResourceType, identity.ResourceName,
 		identity.ResourceProviderApiVersion)
 
 	azureOperationResponse, err := ro.c.DoGet(path, &result)
@@ -88,7 +88,13 @@ func (ro *ResourceOperations) Get(resourceGroupName string, identity *ResourceId
 }
 
 func (ro *ResourceOperations) Delete(resourceGroupName string, identity *ResourceIdentity) (*AzureOperationResponse, error) {
-	return nil, nil
+	subscriptionId := getSubscriptionId(ro.c, nil)
+
+	path := fmt.Sprintf("/subscriptions/%s/resourcegroups/%s/providers/%s/%s/%s/%s?api-version=%s",
+		subscriptionId, resourceGroupName, identity.ResourceProviderNamespace, identity.ParentResourcePath, identity.ResourceType, identity.ResourceName,
+		identity.ResourceProviderApiVersion)
+
+	return ro.c.DoDelete(path)
 }
 
 func (ro *ResourceOperations) CreateOrUpdate(resourceGroupName string, identity *ResourceIdentity) (*ResourceCreateOrUpdateResult, *AzureOperationResponse, error) {
