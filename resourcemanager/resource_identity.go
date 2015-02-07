@@ -1,7 +1,8 @@
 package resourcemanager
 
 type ResourceIdentity struct {
-	Name         string
-	ResourceType string
-	ApiVersion   string
+	ResourceName               string
+	ResourceType               string
+	ResourceProviderApiVersion string
+	ResourceProviderNamespace  string
 }

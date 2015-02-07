@@ -1,5 +1,9 @@
 package resourcemanager
 
+import (
+	"fmt"
+)
+
 func NewResourceOperations(c *ResourceManagementClient) *ResourceOperations {
 	ro := &ResourceOperations{c: c}
 	return ro
@@ -27,14 +31,16 @@ type ResourceCreateOrUpdateResult struct {
 }
 
 type ResourceGetResult struct {
+	Resource
 }
 
 type Resource struct {
-	Id       string            `json:"id"`
-	Name     string            `json:"name"`
-	Type     string            `json:"type"`
-	Location string            `json:"location"`
-	Tags     map[string]string `json:"tags"`
+	Id         string            `json:"id"`
+	Name       string            `json:"name"`
+	Type       string            `json:"type"`
+	Location   string            `json:"location"`
+	Tags       map[string]string `json:"tags"`
+	Properties interface{}       `json:"properties"`
 }
 
 type ResourceListResult struct {
@@ -64,7 +70,21 @@ func (ro *ResourceOperations) Moveresources(sourceResourceGroupName string, para
 }
 
 func (ro *ResourceOperations) Get(resourceGroupName string, identity *ResourceIdentity) (*ResourceGetResult, *AzureOperationResponse, error) {
-	return nil, nil, nil
+	subscriptionId := getSubscriptionId(ro.c, nil)
+
+	var result ResourceGetResult
+
+	path := fmt.Sprintf("/subscriptions/%s/resourcegroups/%s/providers/%s/%s/%s?api-version=%s",
+		subscriptionId, resourceGroupName, identity.ResourceProviderNamespace, identity.ResourceType, identity.ResourceName,
+		identity.ResourceProviderApiVersion)
+
+	azureOperationResponse, err := ro.c.DoGet(path, &result)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &result, azureOperationResponse, nil
 }
 
 func (ro *ResourceOperations) Delete(resourceGroupName string, identity *ResourceIdentity) (*AzureOperationResponse, error) {

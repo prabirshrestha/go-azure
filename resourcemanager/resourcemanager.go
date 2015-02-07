@@ -34,7 +34,7 @@ type ResourceManagementClient struct {
 	tokenCredentials       *azure.TokenCredentials
 	certificateCredentials *azure.CertificateCredentials
 
-	Resource *ResourceOperations
+	Resources *ResourceOperations
 }
 
 type AzureOperationResponse struct {
@@ -69,7 +69,7 @@ func New(options *Options) (*ResourceManagementClient, error) {
 		client.certificateCredentials = &certificateCredentials
 	}
 
-	client.Resource = NewResourceOperations(client)
+	client.Resources = NewResourceOperations(client)
 
 	return client, nil
 }
