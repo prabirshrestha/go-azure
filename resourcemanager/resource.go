@@ -18,19 +18,15 @@ type ResourceListParameters struct {
 }
 
 type ResourceMoveInfo struct {
-
 }
 
 type ResourceExistsResult struct {
-
 }
 
 type ResourceCreateOrUpdateResult struct {
-
 }
 
 type ResourceGetResult struct {
-	
 }
 
 type Resource struct {
@@ -43,6 +39,7 @@ type Resource struct {
 
 type ResourceListResult struct {
 	Value []Resource `json:"value"`
+	Next  string     `json:"next"`
 }
 
 func (ro *ResourceOperations) List(parameters *ResourceListParameters) (*ResourceListResult, *AzureOperationResponse, error) {
