@@ -49,6 +49,7 @@ type ResourceListResult struct {
 	Next  string     `json:"next"`
 }
 
+// List all resources for a given Subscription and Resource group. Each resource is of type Resource.
 func (ro *ResourceOperations) List(parameters *ResourceListParameters) (*ResourceListResult, *AzureOperationResponse, error) {
 	subscriptionId := getSubscriptionId(ro.c, nil)
 
@@ -82,10 +83,12 @@ func (ro *ResourceOperations) ListNext(nextLink string) (*ResourceListResult, *A
 	return nil, nil, nil
 }
 
+// Move resources from one resource group to another
 func (ro *ResourceOperations) Moveresources(sourceResourceGroupName string, parameters *ResourceMoveInfo) (*AzureOperationResponse, error) {
 	return nil, nil
 }
 
+// Get a resource group
 func (ro *ResourceOperations) Get(resourceGroupName string, identity *ResourceIdentity) (*ResourceGetResult, *AzureOperationResponse, error) {
 	subscriptionId := getSubscriptionId(ro.c, nil)
 
@@ -104,6 +107,7 @@ func (ro *ResourceOperations) Get(resourceGroupName string, identity *ResourceId
 	return &result, azureOperationResponse, nil
 }
 
+// Delete a resource group
 func (ro *ResourceOperations) Delete(resourceGroupName string, identity *ResourceIdentity) (*AzureOperationResponse, error) {
 	subscriptionId := getSubscriptionId(ro.c, nil)
 
@@ -114,10 +118,12 @@ func (ro *ResourceOperations) Delete(resourceGroupName string, identity *Resourc
 	return ro.c.DoDelete(path)
 }
 
+// Create a resource group. 
 func (ro *ResourceOperations) CreateOrUpdate(resourceGroupName string, identity *ResourceIdentity) (*ResourceCreateOrUpdateResult, *AzureOperationResponse, error) {
 	return nil, nil, nil
 }
 
+// Checks whether resource group exists.
 func (ro *ResourceOperations) CheckExistence(resourceGroupName string, identity *ResourceIdentity) (*ResourceExistsResult, *AzureOperationResponse, error) {
 	_, azureOperationResponse, err := ro.Get(resourceGroupName, identity)
 

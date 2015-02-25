@@ -19,6 +19,7 @@ const (
 	defaultApiVersion = "2015-01-01"
 )
 
+// Options to pass in while creating ResourceManager Client
 type Options struct {
 	Client     *http.Client
 	BasePath   string
@@ -27,6 +28,7 @@ type Options struct {
 	Credentials interface{}
 }
 
+// Client to access ResourceManager APIs
 type ResourceManagementClient struct {
 	client     *http.Client
 	basePath   string
@@ -38,6 +40,7 @@ type ResourceManagementClient struct {
 	Resources *ResourceOperations
 }
 
+// Base Response object
 type AzureOperationResponse struct {
 	RequestId                           string
 	RateLimitRemainingSubscriptionReads int
@@ -52,6 +55,7 @@ type Error struct {
 	StatusCode             int
 }
 
+// Create a new client
 func New(options *Options) (*ResourceManagementClient, error) {
 	basePath := options.BasePath
 	if basePath == "" {
@@ -136,6 +140,7 @@ func (c *ResourceManagementClient) NewRequest(method, path string, body interfac
 	return req, nil
 }
 
+// Perform an operation on the API
 func (c *ResourceManagementClient) Do(request *http.Request, v interface{}) (*AzureOperationResponse, error) {
 	httpClient := c.client
 	if httpClient == nil {
@@ -175,6 +180,7 @@ func (c *ResourceManagementClient) Do(request *http.Request, v interface{}) (*Az
 	return azureOperationResponse, nil
 }
 
+// Perform a GET operation
 func (c *ResourceManagementClient) DoGet(path string, v interface{}) (*AzureOperationResponse, error) {
 	req, err := c.NewRequest("GET", path, nil)
 	if err != nil {
@@ -183,6 +189,7 @@ func (c *ResourceManagementClient) DoGet(path string, v interface{}) (*AzureOper
 	return c.Do(req, v)
 }
 
+// Perform a POST operation
 func (c *ResourceManagementClient) DoPost(path string, v interface{}) (*AzureOperationResponse, error) {
 	req, err := c.NewRequest("POST", path, v)
 	if err != nil {
@@ -191,6 +198,7 @@ func (c *ResourceManagementClient) DoPost(path string, v interface{}) (*AzureOpe
 	return c.Do(req, v)
 }
 
+// Perform a PUT operation
 func (c *ResourceManagementClient) DoPut(path string, v interface{}) (*AzureOperationResponse, error) {
 	req, err := c.NewRequest("PUT", path, v)
 	if err != nil {
@@ -199,6 +207,7 @@ func (c *ResourceManagementClient) DoPut(path string, v interface{}) (*AzureOper
 	return c.Do(req, v)
 }
 
+// Perform a PATCH operation
 func (c *ResourceManagementClient) DoPatch(path string, v interface{}) (*AzureOperationResponse, error) {
 	req, err := c.NewRequest("PATCH", path, v)
 	if err != nil {
