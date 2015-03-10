@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -53,6 +54,7 @@ type Error struct {
 	error
 	AzureOperationResponse *AzureOperationResponse
 	StatusCode             int
+	Body                   interface{}
 }
 
 // Create a new client
@@ -130,7 +132,7 @@ func (c *ResourceManagementClient) NewRequest(method, path string, body interfac
 
 	req.Header.Set("Accept", "application/json")
 	if contentType != "" {
-		req.Header.Set("Content=Type", contentType)
+		req.Header.Set("ContentType", contentType)
 	}
 
 	if c.tokenCredentials != nil {
@@ -141,7 +143,7 @@ func (c *ResourceManagementClient) NewRequest(method, path string, body interfac
 }
 
 // Perform an operation on the API
-func (c *ResourceManagementClient) Do(request *http.Request, v interface{}) (*AzureOperationResponse, error) {
+func (c *ResourceManagementClient) Do(request *http.Request, result interface{}) (*AzureOperationResponse, error) {
 	httpClient := c.client
 	if httpClient == nil {
 		httpClient = http.DefaultClient
@@ -162,15 +164,42 @@ func (c *ResourceManagementClient) Do(request *http.Request, v interface{}) (*Az
 	azureOperationResponse.StatusCode = res.StatusCode
 
 	if res.StatusCode/100 != 2 {
-		return nil, Error{error: errors.New(fmt.Sprintf("go-azure error: Status Code: %v", res.StatusCode)), AzureOperationResponse: azureOperationResponse, StatusCode: azureOperationResponse.StatusCode}
+
+		error := Error{
+			AzureOperationResponse: azureOperationResponse,
+			StatusCode:             res.StatusCode,
+		}
+
+		contentType := res.Header.Get("content-type")
+
+		contents, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			error.error = err
+			return nil, error
+		} else {
+			if strings.Contains(contentType, "application/json") {
+				err := json.Unmarshal(contents, &error.Body)
+				if err != nil {
+					error.error = err
+					return nil, error
+				} else {
+					error.error = errors.New(fmt.Sprintf("go-azure error: Status Code: %v Body: %v", res.StatusCode, error.Body))
+					return nil, error
+				}
+			} else {
+				error.Body = string(contents)
+				error.error = errors.New(fmt.Sprintf("go-azure error: Status Code: %v Body: %v", res.StatusCode, error.Body))
+				return nil, error
+			}
+		}
 	}
 
-	switch t := v.(type) {
+	switch t := result.(type) {
 	case nil:
 	case io.Writer:
 		_, err = io.Copy(t, res.Body)
 	default:
-		err = json.NewDecoder(res.Body).Decode(v)
+		err = json.NewDecoder(res.Body).Decode(result)
 	}
 
 	if err != nil {
@@ -181,47 +210,48 @@ func (c *ResourceManagementClient) Do(request *http.Request, v interface{}) (*Az
 }
 
 // Perform a GET operation
-func (c *ResourceManagementClient) DoGet(path string, v interface{}) (*AzureOperationResponse, error) {
+func (c *ResourceManagementClient) DoGet(path string, result interface{}) (*AzureOperationResponse, error) {
 	req, err := c.NewRequest("GET", path, nil)
 	if err != nil {
 		return nil, err
 	}
-	return c.Do(req, v)
+	return c.Do(req, result)
 }
 
 // Perform a POST operation
-func (c *ResourceManagementClient) DoPost(path string, v interface{}) (*AzureOperationResponse, error) {
-	req, err := c.NewRequest("POST", path, v)
+func (c *ResourceManagementClient) DoPost(path string, body interface{}, result interface{}) (*AzureOperationResponse, error) {
+	req, err := c.NewRequest("POST", path, body)
 	if err != nil {
 		return nil, err
 	}
-	return c.Do(req, v)
+	return c.Do(req, result)
 }
 
 // Perform a PUT operation
-func (c *ResourceManagementClient) DoPut(path string, v interface{}) (*AzureOperationResponse, error) {
-	req, err := c.NewRequest("PUT", path, v)
+func (c *ResourceManagementClient) DoPut(path string, body interface{}, result interface{}) (*AzureOperationResponse, error) {
+	req, err := c.NewRequest("PUT", path, body)
 	if err != nil {
 		return nil, err
 	}
-	return c.Do(req, v)
+	return c.Do(req, result)
 }
 
 // Perform a PATCH operation
-func (c *ResourceManagementClient) DoPatch(path string, v interface{}) (*AzureOperationResponse, error) {
-	req, err := c.NewRequest("PATCH", path, v)
+func (c *ResourceManagementClient) DoPatch(path string, body interface{}, result interface{}) (*AzureOperationResponse, error) {
+	req, err := c.NewRequest("PATCH", path, body)
 	if err != nil {
 		return nil, err
 	}
-	return c.Do(req, v)
+	return c.Do(req, result)
 }
 
-func (c *ResourceManagementClient) DoDelete(path string) (*AzureOperationResponse, error) {
+// Perform a DELETE operation
+func (c *ResourceManagementClient) DoDelete(path string, result interface{}) (*AzureOperationResponse, error) {
 	req, err := c.NewRequest("DELETE", path, nil)
 	if err != nil {
 		return nil, err
 	}
-	return c.Do(req, nil)
+	return c.Do(req, result)
 }
 
 func getSubscriptionId(c *ResourceManagementClient, options interface{}) string {

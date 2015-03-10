@@ -12,7 +12,7 @@ func main() {
 	token, _ := azure.NewTokenCredentials(os.Getenv("subscription"), os.Getenv("token"))
 	client, _ := arm.New(&arm.Options{Credentials: token})
 
-	listResources(client)
+	// listResources(client)
 	// getResource(client)
 	// deleteResource(client)
 	// checkExistenceResource(client)

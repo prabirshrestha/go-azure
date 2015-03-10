@@ -2,6 +2,8 @@ package resourcemanager
 
 import (
 	"fmt"
+	"net/url"
+	"strconv"
 )
 
 func NewResourceOperations(c *ResourceManagementClient) *ResourceOperations {
@@ -49,25 +51,47 @@ type ResourceListResult struct {
 	Next  string     `json:"next"`
 }
 
+type ResourcesMoveInfo struct {
+	Resources           []string `json:"resources"`
+	TargetResourceGroup string   `json:"targetResourceGroup"`
+}
+
 // List all resources for a given Subscription and Resource group. Each resource is of type Resource.
 func (ro *ResourceOperations) List(parameters *ResourceListParameters) (*ResourceListResult, *AzureOperationResponse, error) {
 	subscriptionId := getSubscriptionId(ro.c, nil)
 
-	path := "/subscriptions/" + subscriptionId
+	path := "/subscriptions/" + url.QueryEscape(subscriptionId)
 
 	if parameters != nil {
 		if parameters.ResourceGroupName != "" {
-			path += "/resourcegroups/" + parameters.ResourceGroupName
+			path += "/resourcegroups/" + url.QueryEscape(parameters.ResourceGroupName)
 		}
 	}
 
-	path += "/resources"
+	path += "/resources?api-version=" + url.QueryEscape(ro.c.apiVersion)
 
 	if parameters != nil {
+		if parameters.Top != 0 {
+			path += "&$top=" + strconv.Itoa(parameters.Top)
+		}
 
+		filter := ""
+
+		if parameters.ResourceType != "" {
+			filter += url.QueryEscape("resourceType eq '" + parameters.ResourceType + "'")
+		}
+
+		if parameters.TagValue != "" {
+			if filter != "" {
+				filter += url.QueryEscape(" and ")
+			}
+			filter += url.QueryEscape("tagValue eq '" + parameters.ResourceType + "'")
+		}
+
+		if filter != "" {
+			path += "&filter=" + filter
+		}
 	}
-
-	path += "?api-version=" + ro.c.apiVersion
 
 	var result ResourceListResult
 	azureOperationResponse, err := ro.c.DoGet(path, &result)
@@ -84,8 +108,13 @@ func (ro *ResourceOperations) ListNext(nextLink string) (*ResourceListResult, *A
 }
 
 // Move resources from one resource group to another
-func (ro *ResourceOperations) Moveresources(sourceResourceGroupName string, parameters *ResourceMoveInfo) (*AzureOperationResponse, error) {
-	return nil, nil
+func (ro *ResourceOperations) MoveResources(sourceResourceGroupName string, parameters *ResourcesMoveInfo) (*AzureOperationResponse, error) {
+	subscriptionId := getSubscriptionId(ro.c, nil)
+
+	path := fmt.Sprintf("/subscriptions/%s/resourcegroups/%s/moveresources?api-version=%s",
+		subscriptionId, sourceResourceGroupName, ro.c.apiVersion)
+
+	return ro.c.DoPost(path, parameters, nil)
 }
 
 // Get a resource group
@@ -115,10 +144,10 @@ func (ro *ResourceOperations) Delete(resourceGroupName string, identity *Resourc
 		subscriptionId, resourceGroupName, identity.ResourceProviderNamespace, identity.ParentResourcePath, identity.ResourceType, identity.ResourceName,
 		identity.ResourceProviderApiVersion)
 
-	return ro.c.DoDelete(path)
+	return ro.c.DoDelete(path, nil)
 }
 
-// Create a resource group. 
+// Create a resource group.
 func (ro *ResourceOperations) CreateOrUpdate(resourceGroupName string, identity *ResourceIdentity) (*ResourceCreateOrUpdateResult, *AzureOperationResponse, error) {
 	return nil, nil, nil
 }
